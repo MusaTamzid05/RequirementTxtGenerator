@@ -22,23 +22,15 @@ func (ls *LibrarySearcher) Search(path string) {
 	}
 
 	for _, path := range paths {
-		libMap, err := ls.getLibsFrom(path)
+		infoSlice, err := ls.getLibsFrom(path)
 
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		if len(libMap) == 0 {
-			continue
+		for _, info := range infoSlice {
+			fmt.Println(info.String())
 		}
-
-		for name, lines := range libMap {
-			fmt.Println("File path: ", name)
-			for index, line := range lines {
-				fmt.Printf("%d = %s\n", index, line)
-			}
-		}
-
 	}
 }
 
@@ -62,38 +54,44 @@ func (ls *LibrarySearcher) getPaths(path string) []string {
 	return paths
 }
 
-func (ls *LibrarySearcher) getLibsFrom(path string) (map[string][]string, error) {
+func (ls *LibrarySearcher) generateLibInfo(fullLibName, path, line string) LibInfo {
 
-	libMap := make(map[string][]string)
+	libData := strings.Split(fullLibName, ".")
+	return CreateLibInfo(path, libData[0], line)
+}
+
+func (ls *LibrarySearcher) getLibsFrom(path string) ([]LibInfo, error) {
+
+	infoSlice := []LibInfo{}
+
 	file, err := os.Open(path)
 
 	if err != nil {
-		return libMap, err
+		return infoSlice, err
 	}
 
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
-	libLines := []string{}
-
 	for scanner.Scan() {
 
 		line := scanner.Text()
 
 		if strings.HasPrefix(line, "import") {
-			libLines = append(libLines, line)
+			data := strings.Split(line, " ")
+			info := ls.generateLibInfo(data[1], path, line)
+			infoSlice = append(infoSlice, info)
 
 		} else if strings.HasPrefix(line, "from") {
 			if strings.Contains(line, "import") {
-				libLines = append(libLines, line)
+				data := strings.Split(line, " ")
+				info := ls.generateLibInfo(data[1], path, line)
+				infoSlice = append(infoSlice, info)
+
 			}
 		}
 	}
 
-	if len(libLines) > 0 {
-		libMap[path] = libLines
-	}
-
-	return libMap, nil
+	return infoSlice, nil
 }

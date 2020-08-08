@@ -7,5 +7,5 @@ import (
 func main() {
 
 	librarySearch := libs.LibrarySearcher{}
-	librarySearch.Search("/home/musa/go_workspace/src/requirements_text_generator/test1")
+	librarySearch.Search("/home/musa/git_clones/cp-vton-plus")
 }
