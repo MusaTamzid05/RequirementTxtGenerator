@@ -7,5 +7,5 @@ import (
 func main() {
 
 	librarySearch := libs.LibrarySearcher{}
-	librarySearch.Search("/home/musa/go_workspace/src/requirements_text_generator")
+	librarySearch.Search("/home/musa/go_workspace/src/requirements_text_generator/test1")
 }

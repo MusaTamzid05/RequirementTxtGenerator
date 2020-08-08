@@ -28,7 +28,17 @@ func (ls *LibrarySearcher) Search(path string) {
 			fmt.Println(err)
 		}
 
-		fmt.Println(libMap)
+		if len(libMap) == 0 {
+			continue
+		}
+
+		for name, lines := range libMap {
+			fmt.Println("File path: ", name)
+			for index, line := range lines {
+				fmt.Printf("%d = %s\n", index, line)
+			}
+		}
+
 	}
 }
 
@@ -65,22 +75,24 @@ func (ls *LibrarySearcher) getLibsFrom(path string) (map[string][]string, error)
 
 	scanner := bufio.NewScanner(file)
 
-	libraryNames := []string{}
+	libLines := []string{}
 
 	for scanner.Scan() {
 
 		line := scanner.Text()
 
 		if strings.HasPrefix(line, "import") {
-			data := strings.Split(line, " ")
-			libraryNames = append(libraryNames, data[1])
+			libLines = append(libLines, line)
 
+		} else if strings.HasPrefix(line, "from") {
+			if strings.Contains(line, "import") {
+				libLines = append(libLines, line)
+			}
 		}
 	}
 
-	if len(libraryNames) > 0 {
-		names := strings.Split(path, "/")
-		libMap[names[len(names)-1]] = libraryNames
+	if len(libLines) > 0 {
+		libMap[path] = libLines
 	}
 
 	return libMap, nil
